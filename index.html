@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>正在跳转...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vibo</title>
     <style>
         * {
             margin: 0;
@@ -11,17 +11,37 @@
             box-sizing: border-box;
         }
         
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* 如果 iframe 被阻止加载，显示备用内容 */
+        .fallback {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             padding: 20px;
         }
-        
-        .container {
+
+        .fallback.show {
+            display: flex;
+        }
+
+        .fallback-box {
             background: white;
             border-radius: 20px;
             padding: 40px;
@@ -30,100 +50,90 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             text-align: center;
         }
-        
-        .icon {
+
+        .fallback-box .icon {
             font-size: 64px;
             margin-bottom: 20px;
-            animation: bounce 1s infinite;
         }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        h1 {
+
+        .fallback-box h1 {
             color: #333;
-            font-size: 24px;
+            font-size: 22px;
             margin-bottom: 15px;
         }
-        
-        p {
+
+        .fallback-box p {
             color: #666;
-            font-size: 16px;
+            font-size: 15px;
             line-height: 1.6;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
-        
-        .countdown {
-            font-size: 48px;
-            font-weight: bold;
-            color: #667eea;
-            margin: 20px 0;
-        }
-        
-        .btn {
+
+        .fallback-box .btn {
             display: inline-block;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 15px 40px;
+            padding: 14px 36px;
             border-radius: 50px;
             text-decoration: none;
             font-size: 16px;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
         }
-        
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
-        }
-        
-        .url {
+
+        .fallback-box .tip {
             margin-top: 20px;
             padding: 15px;
-            background: #f5f5f5;
+            background: #fff3cd;
             border-radius: 10px;
-            word-break: break-all;
-            font-size: 14px;
-            color: #999;
+            font-size: 13px;
+            color: #856404;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="icon">🚀</div>
-        <h1>即将跳转到外部页面</h1>
-        <p>页面将在 <span class="countdown" id="countdown">3</span> 秒后自动跳转</p>
-        <a href="https://y3vhzd3sn5.coze.site" class="btn" id="jumpBtn">立即跳转</a>
-        <div class="url">
-            目标地址：https://y3vhzd3sn5.coze.site
+    <iframe id="mainFrame" src="https://y3vhzd3sn5.coze.site" 
+            allow="accelerometer; camera; microphone; geolocation"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"
+            loading="eager">
+    </iframe>
+
+    <div class="fallback" id="fallback">
+        <div class="fallback-box">
+            <div class="icon">📱</div>
+            <h1>请在浏览器中打开</h1>
+            <p>当前环境无法直接加载页面，请点击下方按钮在浏览器中打开</p>
+            <a href="https://y3vhzd3sn5.coze.site" class="btn">在浏览器中打开</a>
+            <div class="tip">
+                💡 提示：点击右上角「...」菜单，选择「在浏览器中打开」也可以正常访问
+            </div>
         </div>
     </div>
 
     <script>
-        const targetUrl = 'https://y3vhzd3sn5.coze.site';
-        let countdown = 3;
-        const countdownEl = document.getElementById('countdown');
-        const jumpBtn = document.getElementById('jumpBtn');
+        const iframe = document.getElementById('mainFrame');
+        const fallback = document.getElementById('fallback');
 
-        // 倒计时
-        const timer = setInterval(() => {
-            countdown--;
-            countdownEl.textContent = countdown;
-            
-            if (countdown <= 0) {
-                clearInterval(timer);
-                window.location.href = targetUrl;
+        // 检测 iframe 是否加载成功
+        let loaded = false;
+        
+        iframe.onload = function() {
+            loaded = true;
+        };
+
+        iframe.onerror = function() {
+            fallback.classList.add('show');
+            iframe.style.display = 'none';
+        };
+
+        // 5秒超时检测
+        setTimeout(function() {
+            if (!loaded) {
+                // iframe 可能被阻止了
+                fallback.classList.add('show');
+                iframe.style.display = 'none';
             }
-        }, 1000);
-
-        // 立即跳转按钮
-        jumpBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            clearInterval(timer);
-            window.location.href = targetUrl;
-        });
+        }, 5000);
     </script>
 </body>
 </html>
